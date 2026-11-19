@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Transkrip & Laporan Singkat Rapat - Setjen DPR RI</title>
+  <style>
+    :root {
+      --primary: #1a56db;
+      --primary-hover: #1e40af;
+      --purple: #7e22ce;
+      --purple-hover: #6b21a8;
+      --green: #15803d;
+      --green-hover: #166534;
+      --red: #dc2626;
+      --red-hover: #b91c1c;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --muted: #64748b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+    .topbar {
+      background: #0f172a;
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .topbar-title h1 { margin: 0; font-size: 17px; font-weight: 700; }
+    .topbar-title span { font-size: 12px; color: #94a3b8; }
+    .nav-tabs {
+      display: flex;
+      background: #1e293b;
+      padding: 4px;
+      border-radius: 8px;
+      gap: 4px;
+    }
+    .tab-btn {
+      background: transparent;
+      color: #cbd5e1;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tab-btn.active { background: var(--primary); color: white; }
+
+    .main-container {
+      max-width: 1240px;
+      margin: 20px auto;
+      padding: 0 16px 40px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+    }
+    @media (max-width: 960px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      border: 1px solid #e2e8f0;
+      margin-bottom: 20px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f1f5f9;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .card-header h2 { margin: 0; font-size: 15px; color: #1e293b; }
+
+    button {
+      padding: 9px 14px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-danger { background: var(--red); color: white; }
+    .btn-danger:hover:not(:disabled) { background: var(--red-hover); }
+    .btn-purple { background: var(--purple); color: white; }
+    .btn-purple:hover:not(:disabled) { background: var(--purple-hover); }
+    .btn-green { background: var(--green); color: white; }
+    .btn-green:hover:not(:disabled) { background: var(--green-hover); }
+    .btn-outline { background: white; border: 1px solid var(--border); color: #334155; }
+    .btn-outline:hover:not(:disabled) { background: #f8fafc; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    .recorder-controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    select, input[type="text"], textarea {
+      font-family: inherit;
+      font-size: 13.5px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 11px;
+      color: var(--text);
+      width: 100%;
+    }
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .speaker-panel {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 9px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .speaker-panel-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .speaker-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .speaker-pill {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 600;
+      background: white;
+      border: 1.5px solid #cbd5e1;
+      color: #334155;
+      cursor: pointer;
+    }
+    .speaker-pill.active {
+      background: #eff6ff;
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .add-speaker-row { display: flex; gap: 6px; }
+
+    .transcript-feed {
+      max-height: 420px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 4px;
+    }
+    .segment-item {
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #ffffff;
+    }
+    .segment-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .segment-speaker-select {
+      width: auto;
+      font-weight: 700;
+      font-size: 12.5px;
+      padding: 4px 8px;
+      background: #eff6ff;
+      color: #1e40af;
+      border-color: #bfdbfe;
+    }
+    .segment-actions { display: flex; align-items: center; gap: 6px; }
+    .segment-time { font-size: 11px; color: var(--muted); }
+    .segment-text {
+      border: 1px solid transparent;
+      background: #f8fafc;
+      padding: 7px 9px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      line-height: 1.5;
+      resize: vertical;
+      min-height: 46px;
+    }
+    .segment-text:focus { background: white; border-color: var(--primary); }
+
+    .interim-box {
+      margin-top: 10px;
+      padding: 9px 12px;
+      background: #fefce8;
+      border: 1px dashed #eab308;
+      border-radius: 7px;
+      font-size: 13px;
+      color: #854d0e;
+      display: none;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: #94a3b8; }
+    .recording .dot { background: var(--red); animation: blink 1s infinite; }
+    @keyframes blink { 50% { opacity: 0.25; } }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .form-group { margin-bottom: 10px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    .bullet-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 7px;
+      align-items: flex-start;
+    }
+    .bullet-row textarea { min-height: 48px; resize: vertical; }
+
+    /* PREVIEW DOKUMEN A4 */
+    .preview-toolbar {
+      background: white;
+      padding: 12px 18px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .a4-paper {
+      width: 210mm;
+      min-height: 297mm;
+      background: white;
+      margin: 0 auto;
+      padding: 18mm 20mm;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      font-family: Arial, Helvetica, sans-serif;
+      color: #000;
+      font-size: 11pt;
+      line-height: 1.45;
+    }
+    @media (max-width: 850px) { .a4-paper { width: 100%; padding: 20px; } }
+    .kop-surat {
+      text-align: center;
+      border-bottom: 3px double #000;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .kop-surat h3 { margin: 0; font-size: 13pt; font-weight: bold; }
+    .kop-surat p { margin: 3px 0 0; font-size: 8.5pt; }
+    .doc-title {
+      text-align: center;
+      font-weight: bold;
+      font-size: 11.5pt;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      line-height: 1.35;
+    }
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      font-size: 10.5pt;
+    }
+    .meta-table td { vertical-align: top; padding: 2.5px 4px; }
+    .meta-table td:first-child { width: 145px; }
+    .meta-table td:nth-child(2) { width: 14px; }
+    .doc-section-title { font-weight: bold; font-size: 11pt; margin: 14px 0 6px; }
+    .doc-paragraph { text-align: justify; margin: 0 0 10px; font-size: 10.5pt; }
+    .doc-bullets { margin: 0 0 12px; padding-left: 22px; text-align: justify; font-size: 10.5pt; }
+    .doc-bullets li { margin-bottom: 6px; }
+    .ttd-wrapper {
+      margin-top: 26px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .ttd-box { width: 320px; font-size: 10pt; }
+    .tte-card {
+      border: 1.5px solid #000;
+      padding: 8px 10px;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tte-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #0284c7;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+    .lampiran-box {
+      margin-top: 28px;
+      padding-top: 16px;
+      border-top: 1.5px dashed #64748b;
+      font-size: 10pt;
+    }
+    .hidden { display: none !important; }
+    #driveAlert {
+      margin-top: 12px;
+      padding: 12px;
+      background: #dcfce7;
+      border-left: 4px solid #15803d;
+      border-radius: 6px;
+      font-size: 13px;
+      display: none;
+    }
+
+    @media print {
+      body { background: white; }
+      .topbar, .preview-toolbar, #editorView { display: none !important; }
+      .main-container { margin: 0; padding: 0; max-width: 100%; }
+      .a4-paper { box-shadow: none; width: 100%; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-title">
+    <h1>🎙️ Sistem Transkrip & Laporan Singkat Rapat</h1>
+    <span>Terhubung ke Backend Google Apps Script (mkiasndpr.com)</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="tab-btn active" id="tabEditorBtn" onclick="switchTab('editor')">1. Rekam & Edit Laporan</button>
+    <button class="tab-btn" id="tabPreviewBtn" onclick="switchTab('preview')">2. Preview Dokumen & Simpan</button>
+  </div>
+</div>
+
+<div class="main-container">
+
+  <!-- TAB 1: EDITOR -->
+  <div id="editorView">
+    <div class="grid-2">
+      <!-- KOLOM KIRI: PEREKAM & TRANSKRIP MULTI-PEMBICARA -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <h2>🎤 Perekam Suara & Subjek Pembicara</h2>
+            <select id="bahasa" style="width:auto;">
+              <option value="id-ID" selected>🇮🇩 Bahasa Indonesia</option>
+              <option value="en-US">🇺🇸 English (US)</option>
+            </select>
+          </div>
+
+          <div class="recorder-controls">
+            <button class="btn-primary" id="btnStart" onclick="mulaiRekam()">● Mulai Rekam</button>
+            <button class="btn-danger" id="btnStop" onclick="berhentiRekam()" disabled>■ Berhenti</button>
+            <button class="btn-outline" onclick="tambahSegmenManual()">+ Baris Manual</button>
+            <button class="btn-outline" onclick="resetTranskrip()">Reset</button>
+          </div>
+
+          <!-- Pemilih Subjek Pembicara -->
+          <div class="speaker-panel">
+            <span class="speaker-panel-label">Pilih Pembicara Aktif (Klik saat berganti orang bicara):</span>
+            <div class="speaker-pills" id="speakerPills"></div>
+            <div class="add-speaker-row">
+              <input type="text" id="newSpeakerInput" placeholder="Tambah nama/jabatan pembicara baru..." onkeydown="if(event.key==='Enter') tambahPembicara()">
+              <button class="btn-outline btn-sm" onclick="tambahPembicara()">+ Tambah</button>
+            </div>
+          </div>
+
+          <!-- Daftar Kartu Percakapan -->
+          <div class="transcript-feed" id="transcriptFeed"></div>
+
+          <div class="interim-box" id="interimBox"></div>
+
+          <div id="audioPreviewBox" style="display:none; margin-top:12px; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
+            <div style="font-size:12px; font-weight:600; margin-bottom:5px;">🔊 Preview Rekaman Audio:</div>
+            <audio id="audioPlayer" controls style="width:100%; height:36px;"></audio>
+          </div>
+
+          <div class="status-bar" id="statusBar">
+            <div class="dot"></div>
+            <span id="statusText">Siap merekam. Pastikan izin mikrofon aktif di browser.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- KOLOM KANAN: METADATA & SUSUN LAPORAN AI -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <h2>📋 Identitas / Metadata Rapat</h2>
+          </div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>Unit Kerja</label>
+              <input type="text" id="unitKerja" value="BAGIAN MANAJEMEN KINERJA DAN INFORMASI ASN">
+            </div>
+            <div class="form-group full">
+              <label>Judul Rapat</label>
+              <input type="text" id="judulRapat" value="RAPAT KOORDINASI PEMBAHASAN PERSEKJEN TENTANG PENGHARGAAN PEGAWAI ASN DI SEKRETARIAT JENDERAL DPR RI">
+            </div>
+            <div class="form-group">
+              <label>Jenis Kegiatan</label>
+              <input type="text" id="jenisKegiatan" value="Rapat Koordinasi">
+            </div>
+            <div class="form-group">
+              <label>Hari / Tanggal</label>
+              <input type="text" id="hariTanggal" value="Kamis, 19 November 2026">
+            </div>
+            <div class="form-group">
+              <label>Waktu</label>
+              <input type="text" id="waktu" value="Pukul 13.00 WIB – selesai">
+            </div>
+            <div class="form-group">
+              <label>Tempat</label>
+              <input type="text" id="tempat" value="Ruang Rapat Biro Hukum dan Pengaduan Masyarakat">
+            </div>
+            <div class="form-group full">
+              <label>Acara</label>
+              <input type="text" id="acara" value="Rapat Koordinasi Pembahasan Persekjen Tentang Penghargaan Pegawai ASN">
+            </div>
+            <div class="form-group full">
+              <label>Pimpinan Rapat</label>
+              <input type="text" id="pimpinanRapat" value="Mardi Harjo, S.E., M.Si (Kepala Bagian MKI ASN)">
+            </div>
+            <div class="form-group full">
+              <label>Hadir (Pisahkan dengan titik koma)</label>
+              <textarea id="daftarHadir" rows="3">Kepala Bagian MKI ASN; Kepala Bagian Pembentukan Produk Hukum; Analis Legislatif Ahli Madya; Analis SDMA Ahli Pertama</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>📝 Susunan Laporan Singkat (Dapat Diedit)</h2>
+            <button class="btn-purple btn-sm" id="btnAiSummary" onclick="susunLaporanAI()">✨ Susun Laporan AI</button>
+          </div>
+
+          <div class="form-group">
+            <label>1. Pendahuluan</label>
+            <textarea id="pendahuluanInput" rows="4" placeholder="Klik '✨ Susun Laporan AI' setelah merekam atau ketik manual..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>2. Pokok-pokok Pembahasan (Poin-poin)</label>
+            <div id="bulletsContainer"></div>
+            <button class="btn-outline btn-sm" onclick="tambahPoinPembahasan('')">+ Tambah Poin Pembahasan</button>
+          </div>
+
+          <div class="form-group">
+            <label>3. Penutup</label>
+            <textarea id="penutupInput" rows="3" placeholder="Kesimpulan tindak lanjut rapat..."></textarea>
+          </div>
+
+          <div class="form-grid" style="margin-top:12px; padding-top:12px; border-top:1px solid #f1f5f9;">
+            <div class="form-group full">
+              <label>Tempat & Tanggal Tanda Tangan</label>
+              <input type="text" id="tempatTanggalTtd" value="Jakarta, 19 November 2026">
+            </div>
+            <div class="form-group">
+              <label>Jabatan Penandatangan</label>
+              <input type="text" id="jabatanTtd" value="KEPALA BAGIAN MANAJEMEN KINERJA DAN INFORMASI ASN">
+            </div>
+            <div class="form-group">
+              <label>Nama Pejabat</label>
+              <input type="text" id="namaTtd" value="Mardi Harjo, S.E., M.Si.">
+            </div>
+          </div>
+
+          <div style="margin-top:14px; text-align:right;">
+            <button class="btn-primary" onclick="switchTab('preview')">Lanjut ke Preview Dokumen →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: PREVIEW DOKUMEN RESMI A4 -->
+  <div id="previewView" class="hidden">
+    <div class="preview-toolbar">
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <button class="btn-outline" onclick="switchTab('editor')">← Kembali Edit</button>
+        <label style="font-size:13px; display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="checkbox" id="chkLampiran" checked onchange="renderPreview()"> Sertakan Lampiran Transkrip per Pembicara
+        </label>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn-outline" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+        <button class="btn-green" id="btnSaveDrive" onclick="simpanKeDrive()">☁️ Simpan Audio & Docs ke Drive</button>
+      </div>
+    </div>
+
+    <div id="driveAlert"></div>
+
+    <div class="a4-paper" id="a4Paper">
+      <div class="kop-surat">
+        <h3>SEKRETARIAT JENDERAL<br>DEWAN PERWAKILAN RAKYAT REPUBLIK INDONESIA</h3>
+        <p>JLN. JENDERAL GATOT SUBROTO JAKARTA KODE POS 10270<br>TELP (021) 5715 349 FAX (021) 5715 423 / 5715 925, WEBSITE : www.dpr.go.id</p>
+      </div>
+
+      <div class="doc-title">
+        LAPORAN SINGKAT<br>
+        <span id="prevUnitKerja"></span><br>
+        <span id="prevJudulRapat"></span>
+      </div>
+
+      <table class="meta-table">
+        <tr><td>Jenis Kegiatan</td><td>:</td><td id="prevJenis"></td></tr>
+        <tr><td>Hari/Tanggal</td><td>:</td><td id="prevTanggal"></td></tr>
+        <tr><td>Waktu</td><td>:</td><td id="prevWaktu"></td></tr>
+        <tr><td>Tempat</td><td>:</td><td id="prevTempat"></td></tr>
+        <tr><td>Acara</td><td>:</td><td id="prevAcara"></td></tr>
+        <tr><td>Pimpinan Rapat</td><td>:</td><td id="prevPimpinan"></td></tr>
+        <tr><td>Hadir</td><td>:</td><td id="prevHadir"></td></tr>
+      </table>
+
+      <div class="doc-section-title">Pendahuluan</div>
+      <p class="doc-paragraph" id="prevPendahuluan"></p>
+
+      <div class="doc-section-title">Pokok-pokok Pembahasan</div>
+      <ul class="doc-bullets" id="prevBullets"></ul>
+
+      <div class="doc-section-title">Penutup</div>
+      <p class="doc-paragraph" id="prevPenutup"></p>
+
+      <div class="ttd-wrapper">
+        <div class="ttd-box">
+          <div id="prevTempatTglTtd" style="margin-bottom:6px;"></div>
+          <div class="tte-card">
+            <div class="tte-badge">TTE</div>
+            <div>
+              <div style="font-size:8.5pt;">Ditandatangani secara elektronik oleh :</div>
+              <div style="font-weight:bold; font-size:8.5pt;" id="prevJabatanTtd"></div>
+              <div style="font-weight:bold; margin-top:12px;" id="prevNamaTtd"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lampiran-box" id="prevLampiran">
+        <div class="doc-section-title" style="margin-top:0;">LAMPIRAN: TRANSKRIP PERCAKAPAN RAPAT</div>
+        <div id="prevTranskripList"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // URL Web App Google Apps Script Anda
+  const APPS_SCRIPT_URL = "https://script.google.com/a/macros/mkiasndpr.com/s/AKfycbx6UMIH3yAyV546j-4cXOJjRA6WA2AhZgbIGAQp9bbzsByzR9s3ZHroPnfwV7RLDQaj-w/exec";
+
+  let speakers = [
+    "Pimpinan Rapat (Kabag MKI ASN)",
+    "Kabag Pembentukan Produk Hukum",
+    "Analis Legislatif Ahli Madya",
+    "Peserta Rapat"
+  ];
+  let activeSpeaker = speakers[0];
+  let segments = [];
+  let pokokList = [
+    "Rapat koordinasi dilaksanakan untuk membahas pembaruan dan penyempurnaan substansi Rancangan Persekjen tentang Penghargaan Pegawai ASN.",
+    "Peserta rapat memberikan masukan terkait kriteria penilaian prestasi kerja dan mekanisme seleksi agar akuntabel."
+  ];
+
+  let recognition = null;
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let audioBlob = null;
+  let audioMimeType = "audio/webm";
+  let isRecording = false;
+
+  // Inisialisasi UI awal
+  window.onload = function() {
+    renderSpeakerPills();
+    renderSegments();
+    renderBullets();
+  };
+
+  function switchTab(tab) {
+    if (tab === 'preview') {
+      renderPreview();
+      document.getElementById('editorView').classList.add('hidden');
+      document.getElementById('previewView').classList.remove('hidden');
+      document.getElementById('tabEditorBtn').classList.remove('active');
+      document.getElementById('tabPreviewBtn').classList.add('active');
+    } else {
+      document.getElementById('previewView').classList.add('hidden');
+      document.getElementById('editorView').classList.remove('hidden');
+      document.getElementById('tabPreviewBtn').classList.remove('active');
+      document.getElementById('tabEditorBtn').classList.add('active');
+    }
+  }
+
+  // Manajemen Pembicara
+  function renderSpeakerPills() {
+    const container = document.getElementById('speakerPills');
+    container.innerHTML = '';
+    speakers.forEach(sp => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'speaker-pill' + (sp === activeSpeaker ? ' active' : '');
+      btn.innerText = (sp === activeSpeaker ? '🎙️ ' : '') + sp;
+      btn.onclick = () => {
+        activeSpeaker = sp;
+        renderSpeakerPills();
+      };
+      container.appendChild(btn);
+    });
+  }
+
+  function tambahPembicara() {
+    const input = document.getElementById('newSpeakerInput');
+    const nama = input.value.trim();
+    if (!nama) return;
+    if (!speakers.includes(nama)) {
+      speakers.push(nama);
+    }
+    activeSpeaker = nama;
+    input.value = '';
+    renderSpeakerPills();
+    renderSegments();
+  }
+
+  // Manajemen Segmen Percakapan
+  function getNowTime() {
+    const d = new Date();
+    return d.toTimeString().slice(0, 8);
+  }
+
+  function tambahSegmenSuara(pembicara, teks) {
+    if (!teks.trim()) return;
+    // Jika pembicara sama dengan segmen terakhir, gabungkan teksnya
+    if (segments.length > 0 && segments[segments.length - 1].pembicara === pembicara) {
+      segments[segments.length - 1].teks += " " + teks.trim();
+    } else {
+      segments.push({
+        id: Date.now() + Math.random(),
+        pembicara: pembicara,
+        waktu: getNowTime(),
+        teks: teks.trim()
+      });
+    }
+    renderSegments();
+  }
+
+  function tambahSegmenManual() {
+    segments.push({
+      id: Date.now() + Math.random(),
+      pembicara: activeSpeaker,
+      waktu: getNowTime(),
+      teks: ""
+    });
+    renderSegments();
+  }
+
+  function renderSegments() {
+    const feed = document.getElementById('transcriptFeed');
+    if (segments.length === 0) {
+      feed.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:13px; padding:24px;">Belum ada transkrip. Klik <b>Mulai Rekam</b> dan mulai berbicara.</div>';
+      return;
+    }
+
+    feed.innerHTML = '';
+    segments.forEach((seg, idx) => {
+      const div = document.createElement('div');
+      div.className = 'segment-item';
+
+      const optionsHtml = speakers.map(sp =>
+        `<option value="${sp}" ${sp === seg.pembicara ? 'selected' : ''}>${sp}</option>`
+      ).join('');
+
+      div.innerHTML = `
+        <div class="segment-top">
+          <select class="segment-speaker-select" onchange="ubahPembicaraSegmen(${idx}, this.value)">
+            ${optionsHtml}
+          </select>
+          <div class="segment-actions">
+            <span class="segment-time">${seg.waktu}</span>
+            ${idx > 0 ? `<button class="btn-outline btn-sm" onclick="gabungKeAtas(${idx})" title="Gabungkan ke baris atas">Gabung ↑</button>` : ''}
+            <button class="btn-outline btn-sm" onclick="hapusSegmen(${idx})" style="color:#dc2626;">✕</button>
+          </div>
+        </div>
+        <textarea class="segment-text" oninput="segments[${idx}].teks = this.value">${seg.teks}</textarea>
+      `;
+      feed.appendChild(div);
+    });
+    feed.scrollTop = feed.scrollHeight;
+  }
+
+  function ubahPembicaraSegmen(idx, val) {
+    segments[idx].pembicara = val;
+  }
+
+  function gabungKeAtas(idx) {
+    if (idx <= 0) return;
+    segments[idx - 1].teks += " " + segments[idx].teks;
+    segments.splice(idx, 1);
+    renderSegments();
+  }
+
+  function hapusSegmen(idx) {
+    segments.splice(idx, 1);
+    renderSegments();
+  }
+
+  function resetTranskrip() {
+    if (isRecording) berhentiRekam();
+    segments = [];
+    audioBlob = null;
+    audioChunks = [];
+    document.getElementById('audioPreviewBox').style.display = 'none';
+    renderSegments();
+  }
+
+  // Perekaman Suara & Speech Recognition
+  async function mulaiRekam() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Browser Anda tidak mendukung Web Speech API. Gunakan Google Chrome atau Microsoft Edge.");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      audioBlob = null;
+      document.getElementById('audioPreviewBox').style.display = 'none';
+
+      mediaRecorder = new MediaRecorder(stream);
+      audioMimeType = mediaRecorder.mimeType || 'audio/webm';
+
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onstop = () => {
+        audioBlob = new Blob(audioChunks, { type: audioMimeType });
+        document.getElementById('audioPlayer').src = URL.createObjectURL(audioBlob);
+        document.getElementById('audioPreviewBox').style.display = 'block';
+        stream.getTracks().forEach(t => t.stop());
+      };
+      mediaRecorder.start();
+
+      recognition = new SpeechRecognition();
+      recognition.lang = document.getElementById('bahasa').value;
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onresult = function(event) {
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            tambahSegmenSuara(activeSpeaker, event.results[i][0].transcript);
+          } else {
+            interim += event.results[i][0].transcript;
+          }
+        }
+        const interimBox = document.getElementById('interimBox');
+        if (interim) {
+          interimBox.style.display = 'block';
+          interimBox.innerText = `🎙️ [${activeSpeaker}] sedang bicara: "${interim}"`;
+        } else {
+          interimBox.style.display = 'none';
+        }
+      };
+
+      recognition.onend = function() {
+        if (isRecording) {
+          try { recognition.start(); } catch (e) {}
+        }
+      };
+
+      recognition.start();
+      isRecording = true;
+
+      document.getElementById('btnStart').disabled = true;
+      document.getElementById('btnStop').disabled = false;
+      document.getElementById('statusBar').classList.add('recording');
+      document.getElementById('statusText').innerText = 'Sedang merekam & mentranskripsi langsung...';
+
+    } catch (err) {
+      alert("Gagal mengakses mikrofon: " + err.message);
+    }
+  }
+
+  function berhentiRekam() {
+    isRecording = false;
+    if (recognition) recognition.stop();
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+
+    document.getElementById('btnStart').disabled = false;
+    document.getElementById('btnStop').disabled = true;
+    document.getElementById('interimBox').style.display = 'none';
+    document.getElementById('statusBar').classList.remove('recording');
+    document.getElementById('statusText').innerText = 'Rekaman selesai. Silakan klik "✨ Susun Laporan AI" atau edit manual.';
+  }
+
+  // Poin-poin Pembahasan
+  function renderBullets() {
+    const container = document.getElementById('bulletsContainer');
+    container.innerHTML = '';
+    pokokList.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'bullet-row';
+      row.innerHTML = `
+        <textarea oninput="pokokList[${idx}] = this.value">${item}</textarea>
+        <button class="btn-outline btn-sm" onclick="hapusPoin(${idx})" style="color:#dc2626;">✕</button>
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  function tambahPoinPembahasan(teks) {
+    pokokList.push(teks);
+    renderBullets();
+  }
+
+  function hapusPoin(idx) {
+    pokokList.splice(idx, 1);
+    renderBullets();
+  }
+
+  // Koneksi Fetch ke Google Apps Script
+  async function panggilBackendAppsScript(payload) {
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const json = await response.json();
+    if (json.status === 'error') {
+      throw new Error(json.message);
+    }
+    return json.data;
+  }
+
+  function kumpulkanDataRapat() {
+    const transkripFormatted = segments.map(s => `[${s.waktu}] ${s.pembicara}: ${s.teks}`).join('\n');
+    return {
+      unitKerja: document.getElementById('unitKerja').value,
+      judulRapat: document.getElementById('judulRapat').value,
+      jenisKegiatan: document.getElementById('jenisKegiatan').value,
+      hariTanggal: document.getElementById('hariTanggal').value,
+      waktu: document.getElementById('waktu').value,
+      tempat: document.getElementById('tempat').value,
+      acara: document.getElementById('acara').value,
+      pimpinanRapat: document.getElementById('pimpinanRapat').value,
+      daftarHadir: document.getElementById('daftarHadir').value,
+      pendahuluan: document.getElementById('pendahuluanInput').value,
+      pokokPembahasan: pokokList.filter(p => p.trim() !== ''),
+      penutup: document.getElementById('penutupInput').value,
+      tempatTanggalTtd: document.getElementById('tempatTanggalTtd').value,
+      jabatanTtd: document.getElementById('jabatanTtd').value,
+      namaTtd: document.getElementById('namaTtd').value,
+      sertakanTranskrip: document.getElementById('chkLampiran').checked,
+      segmen: segments,
+      transkripFormatted: transkripFormatted
+    };
+  }
+
+  async function susunLaporanAI() {
+    if (segments.length === 0) {
+      alert("Belum ada transkrip percakapan untuk diringkas!");
+      return;
+    }
+
+    const btn = document.getElementById('btnAiSummary');
+    btn.disabled = true;
+    btn.innerText = '⏳ Menyusun dengan Gemini AI...';
+
+    try {
+      const dataRapat = kumpulkanDataRapat();
+      const hasilAI = await panggilBackendAppsScript({
+        action: 'ringkas',
+        data: dataRapat
+      });
+
+      document.getElementById('pendahuluanInput').value = hasilAI.pendahuluan || '';
+      pokokList = hasilAI.pokokPembahasan || [];
+      renderBullets();
+      document.getElementById('penutupInput').value = hasilAI.penutup || '';
+
+      alert("✅ Draf Laporan Singkat (Pendahuluan, Pokok Pembahasan, Penutup) berhasil disusun oleh Gemini AI!");
+    } catch (err) {
+      alert("Gagal menyusun laporan AI: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = '✨ Susun Laporan AI';
+    }
+  }
+
+  // Render Preview Dokumen Resmi A4
+  function renderPreview() {
+    const d = kumpulkanDataRapat();
+    document.getElementById('prevUnitKerja').innerText = d.unitKerja;
+    document.getElementById('prevJudulRapat').innerText = d.judulRapat;
+    document.getElementById('prevJenis').innerText = d.jenisKegiatan;
+    document.getElementById('prevTanggal').innerText = d.hariTanggal;
+    document.getElementById('prevWaktu').innerText = d.waktu;
+    document.getElementById('prevTempat').innerText = d.tempat;
+    document.getElementById('prevAcara').innerText = d.acara;
+    document.getElementById('prevPimpinan').innerText = d.pimpinanRapat;
+
+    const hadirArr = d.daftarHadir.split(';').map(h => h.trim()).filter(Boolean);
+    document.getElementById('prevHadir').innerHTML = hadirArr.join(';<br>');
+
+    document.getElementById('prevPendahuluan').innerText = d.pendahuluan || '(Belum diisi)';
+
+    const ul = document.getElementById('prevBullets');
+    ul.innerHTML = '';
+    (d.pokokPembahasan.length ? d.pokokPembahasan : ['(Belum ada poin pembahasan)']).forEach(p => {
+      const li = document.createElement('li');
+      li.innerText = p;
+      ul.appendChild(li);
+    });
+
+    document.getElementById('prevPenutup').innerText = d.penutup || '(Belum diisi)';
+    document.getElementById('prevTempatTglTtd').innerText = d.tempatTanggalTtd;
+    document.getElementById('prevJabatanTtd').innerText = d.jabatanTtd;
+    document.getElementById('prevNamaTtd').innerText = d.namaTtd;
+
+    const lampiranBox = document.getElementById('prevLampiran');
+    if (d.sertakanTranskrip && d.segmen.length > 0) {
+      lampiranBox.classList.remove('hidden');
+      const listDiv = document.getElementById('prevTranskripList');
+      listDiv.innerHTML = d.segmen.map(s =>
+        `<p style="margin:0 0 8px;"><b>[${s.waktu}] ${s.pembicara}:</b><br>${s.teks}</p>`
+      ).join('');
+    } else {
+      lampiranBox.classList.add('hidden');
+    }
+  }
+
+  // Simpan ke Google Drive via Backend
+  async function simpanKeDrive() {
+    const btn = document.getElementById('btnSaveDrive');
+    btn.disabled = true;
+    btn.innerText = '⏳ Menyimpan ke Google Drive...';
+
+    try {
+      const dataRapat = kumpulkanDataRapat();
+      let audioBase64 = null;
+
+      if (audioBlob) {
+        audioBase64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(',')[1]);
+          reader.readAsDataURL(audioBlob);
+        });
+      }
+
+      const res = await panggilBackendAppsScript({
+        action: 'simpan',
+        data: dataRapat,
+        audioBase64: audioBase64,
+        mimeType: audioMimeType
+      });
+
+      const alertBox = document.getElementById('driveAlert');
+      alertBox.style.display = 'block';
+      alertBox.innerHTML = `
+        <strong>✅ Berhasil tersimpan di Google Drive!</strong><br>
+        📁 <a href="${res.folderUrl}" target="_blank">Buka Folder "Laporan Singkat & Rekaman Rapat"</a><br>
+        📄 <a href="${res.docUrl}" target="_blank">Buka Dokumen: ${res.docNama}</a>
+        ${res.audioUrl ? `<br>🎵 <a href="${res.audioUrl}" target="_blank">Dengarkan Audio: ${res.audioNama}</a>` : ''}
+      `;
+    } catch (err) {
+      alert("Gagal menyimpan ke Google Drive: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = '☁️ Simpan Audio & Docs ke Drive';
+    }
+  }
+</script>
+</body>
+</html>
